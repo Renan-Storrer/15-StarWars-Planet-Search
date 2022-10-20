@@ -1,19 +1,82 @@
 import React, { useContext } from 'react';
 import Input from './Input';
+import Select from './Select';
 import Context from '../context/Context';
 
+const OPTIONS = [
+  'population',
+  'orbital_period',
+  'diameter',
+  'rotation_period',
+  'surface_water',
+];
+
+const OPERATOR_OPTIONS = ['maior que', 'menor que', 'igual a'];
+
 function Filter() {
-  const { filterName, handleFilterName } = useContext(Context);
+  const {
+    nameFilter,
+    valueFilter,
+    columnFilter,
+    operatorFilter,
+    filterPlanets,
+    handleNameFilter,
+    handleValueFilter,
+    handleColumnFilter,
+    handleOperatorFilter,
+  } = useContext(Context);
+
   return (
     <div>
-      <Input
-        name="name"
-        value={ filterName }
-        onChange={ handleFilterName }
-        type="text"
-        placeholder="Pesquise pelo nome"
-        dataTestid="name-filter"
-      />
+      <div>
+        <Input
+          name="name"
+          placeholder="Filtre pelo nome"
+          type="text"
+          value={ nameFilter }
+          onChange={ handleNameFilter }
+          dataTestid="name-filter"
+        />
+      </div>
+      <div>
+        <Select
+          label="Coluna"
+          name="coluna"
+          onChange={ handleColumnFilter }
+          value={ columnFilter }
+          options={ OPTIONS }
+          dataTestid="column-filter"
+        />
+      </div>
+      <div>
+        <Select
+          label="Operador"
+          name="operador"
+          onChange={ handleOperatorFilter }
+          value={ operatorFilter }
+          options={ OPERATOR_OPTIONS }
+          dataTestid="comparison-filter"
+        />
+      </div>
+      <div>
+        <Input
+          name="valueFilter"
+          type="number"
+          value={ valueFilter }
+          onChange={ handleValueFilter }
+          placeholder="Nº"
+          dataTestid="value-filter"
+        />
+      </div>
+      <div>
+        <button
+          type="button"
+          onClick={ () => filterPlanets() }
+          data-testid="button-filter"
+        >
+          FILTRAR
+        </button>
+      </div>
     </div>
   );
 }
