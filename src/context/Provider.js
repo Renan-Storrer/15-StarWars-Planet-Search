@@ -10,13 +10,13 @@ function Provider({ children }) {
   const [operatorFilter, setOperatorFilter] = useState('maior que');
   const [isLoading, setIsLoading] = useState(true);
   const [filteredPlanet, setFilteredPlanet] = useState([]);
+  const [filters, setFilters] = useState([]);
 
   useEffect(() => {
     const getPlanets = async () => {
       const ENDPOINT = 'https://swapi.dev/api/planets';
       const { results } = await fetch(ENDPOINT).then((response) => response.json());
       results.filter((planet) => delete (planet.residents));
-
       setPlanets(results);
       setFilteredPlanet(results);
       setIsLoading(false);
@@ -24,12 +24,22 @@ function Provider({ children }) {
     getPlanets();
   }, []);
 
-  const handleColumnFilter = ({ target }) => {
-    setColumnFilter(target.value);
-  };
+  useEffect(() => {
+    setFilteredPlanet(filteredPlanet.filter((el) => {
+      switch (operatorFilter) {
+      case 'maior que': return +el[columnFilter] > +valueFilter;
+      case 'menor que': return +el[columnFilter] < +valueFilter;
+      default: return +el[columnFilter] === +valueFilter;
+      }
+    }));
+  }, [filters]);
 
   const handleNameFilter = ({ target }) => {
     setNameFilter(target.value);
+  };
+
+  const handleColumnFilter = ({ target }) => {
+    setColumnFilter(target.value);
   };
 
   const handleOperatorFilter = ({ target }) => {
@@ -49,18 +59,20 @@ function Provider({ children }) {
     operatorFilter,
     filteredPlanet,
     handleNameFilter,
-    filterPlanets: () => {
-      setFilteredPlanet(planets.filter((el) => {
-        switch (operatorFilter) {
-        case 'maior que': return +el[columnFilter] > +valueFilter;
-        case 'menor que': return +el[columnFilter] < +valueFilter;
-        default: return +el[columnFilter] === +valueFilter;
-        }
-      }));
+    submitFilter: (e) => {
+      e.preventDefault();
+      if (!columnFilter || !valueFilter || !operatorFilter) return;
+      const newFilter = {
+        columnFilter,
+        operatorFilter,
+        valueFilter,
+      };
+      setFilters((prev) => [...prev, { ...newFilter }]);
     },
     handleValueFilter,
     handleColumnFilter,
     handleOperatorFilter,
+    filters,
   }), [
     planets,
     isLoading,
@@ -69,6 +81,7 @@ function Provider({ children }) {
     columnFilter,
     operatorFilter,
     filteredPlanet,
+    filters,
   ]);
 
   return (

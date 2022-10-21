@@ -19,11 +19,11 @@ function Filter() {
     valueFilter,
     columnFilter,
     operatorFilter,
-    filterPlanets,
     handleNameFilter,
     handleValueFilter,
     handleColumnFilter,
     handleOperatorFilter,
+    submitFilter,
   } = useContext(Context);
 
   return (
@@ -71,7 +71,7 @@ function Filter() {
       <div>
         <button
           type="button"
-          onClick={ () => filterPlanets() }
+          onClick={ (e) => submitFilter(e) }
           data-testid="button-filter"
         >
           FILTRAR
