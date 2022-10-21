@@ -7,9 +7,12 @@ function Filters() {
     optionsColumn,
     activeOptions,
     handleChangeFilters,
+    handleChangeSort,
     handleClickFilterStats,
+    setPlanetsSort,
     removeFilter,
   } = useContext(MyContext);
+
   return (
     <div>
       <input
@@ -53,6 +56,48 @@ function Filters() {
         >
           Filtrar
         </button>
+
+        <span>Ordernar:</span>
+        <select
+          data-testid="column-sort"
+          name="orderColumn"
+          onChange={ handleChangeSort }
+        >
+          <option>population</option>
+          <option>orbital_period</option>
+          <option>diameter</option>
+          <option>rotation_period</option>
+          <option>surface_water</option>
+        </select>
+        <label htmlFor="ASC">
+          <input
+            type="radio"
+            name="orderType"
+            data-testid="column-sort-input-asc"
+            value="ASC"
+            id="ASC"
+            onChange={ handleChangeSort }
+          />
+          Ascendente
+        </label>
+        <label htmlFor="DESC">
+          <input
+            type="radio"
+            name="orderType"
+            data-testid="column-sort-input-desc"
+            value="DESC"
+            id="DESC"
+            onChange={ handleChangeSort }
+          />
+          Decescente
+        </label>
+        <button
+          type="button"
+          data-testid="column-sort-button"
+          onClick={ setPlanetsSort }
+        >
+          Ordernar
+        </button>
         <button
           type="button"
           data-testid="button-remove-filters"
@@ -78,4 +123,5 @@ function Filters() {
     </div>
   );
 }
+
 export default Filters;

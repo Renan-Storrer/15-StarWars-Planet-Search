@@ -25,6 +25,11 @@ function Provider({ children }) {
 
   const [activeOptions, setActiveOptions] = useState([]);
 
+  const [orderOptions, setOrderOptions] = useState({
+    orderColumn: 'population',
+    orderType: 'ASC',
+  });
+
   const handleChangeFilters = useCallback(({ target }) => {
     const { value, name } = target;
     if (name !== '') {
@@ -34,6 +39,11 @@ function Provider({ children }) {
       setFilteredPlanets(filter);
     }
   }, [planets, stats]);
+
+  const handleChangeSort = useCallback(({ target }) => {
+    const { value, name } = target;
+    setOrderOptions({ ...orderOptions, [name]: value });
+  }, [orderOptions]);
 
   const handleFilterOptions = useCallback((column, comparison, filterValue) => {
     const updateOptionsColumn = optionsColumn.filter((element) => element !== column);
@@ -62,6 +72,45 @@ function Provider({ children }) {
     handleFilterOptions(column, comparison, filterValue);
     setFilteredPlanets(filter);
   }, [stats, filteredPlanets, setRenderPlanets, handleFilterOptions]);
+
+  const setPlanetsSort = useCallback(() => {
+    const { orderColumn, orderType } = orderOptions;
+
+    const toSort = filteredPlanets.map((element) => {
+      if (element[orderColumn] !== 'unknown') {
+        element[orderColumn] = Number(element[orderColumn]);
+      }
+      return element;
+    });
+
+    const unknown = [];
+    const numbered = [];
+
+    toSort.forEach((element) => {
+      if (typeof element[orderColumn] === 'string') {
+        unknown.push(element);
+      } else {
+        numbered.push(element);
+      }
+    });
+
+    if (orderType === 'ASC') {
+      numbered.sort((a, b) => a[orderColumn] - b[orderColumn]);
+      unknown.sort();
+    } else {
+      numbered.sort((a, b) => b[orderColumn] - a[orderColumn]);
+      unknown.sort();
+      unknown.reverse();
+    }
+
+    let sortedPlanet;
+    if (unknown.length === 0) {
+      sortedPlanet = [...numbered];
+    } else {
+      sortedPlanet = [...numbered, ...unknown];
+    }
+    setFilteredPlanets(sortedPlanet);
+  }, [orderOptions, filteredPlanets]);
 
   const removeFilter = useCallback((option) => {
     let updateActiveOptions;
@@ -110,7 +159,9 @@ function Provider({ children }) {
     optionsColumn,
     activeOptions,
     handleChangeFilters,
+    handleChangeSort,
     handleClickFilterStats,
+    setPlanetsSort,
     removeFilter,
   }), [
     planets,
@@ -119,13 +170,15 @@ function Provider({ children }) {
     optionsColumn,
     activeOptions,
     handleChangeFilters,
+    handleChangeSort,
     handleClickFilterStats,
+    setPlanetsSort,
     removeFilter,
   ]);
 
   return (
     <MyContext.Provider value={ contextValue }>
-      { children }
+      {children}
     </MyContext.Provider>
   );
 }
