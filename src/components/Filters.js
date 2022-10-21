@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import Context from '../context/Context';
+import MyContext from '../context/MyContext';
 
 function Filters() {
   const {
@@ -9,8 +9,7 @@ function Filters() {
     handleChangeFilters,
     handleClickFilterStats,
     removeFilter,
-  } = useContext(Context);
-
+  } = useContext(MyContext);
   return (
     <div>
       <input
@@ -47,13 +46,11 @@ function Filters() {
           onChange={ handleChangeFilters }
           value={ stats.filterValue }
         />
-
         <button
           type="button"
           data-testid="button-filter"
           onClick={ handleClickFilterStats }
         >
-
           Filtrar
         </button>
         <button
@@ -81,5 +78,4 @@ function Filters() {
     </div>
   );
 }
-
 export default Filters;

@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import Context from './Context';
+import MyContext from './MyContext';
 
 function Provider({ children }) {
   const [planets, setPlanets] = useState([]);
@@ -124,9 +124,9 @@ function Provider({ children }) {
   ]);
 
   return (
-    <Context.Provider value={ contextValue }>
+    <MyContext.Provider value={ contextValue }>
       { children }
-    </Context.Provider>
+    </MyContext.Provider>
   );
 }
 

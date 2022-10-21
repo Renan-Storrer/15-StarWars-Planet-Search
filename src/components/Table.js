@@ -1,63 +1,43 @@
 import React, { useContext } from 'react';
-import Filter from './Filter';
-import Context from '../context/Context';
+import MyContext from '../context/MyContext';
 
 function Table() {
-  const { filteredPlanet, nameFilter, isLoading } = useContext(Context);
-
+  const { planets, filteredPlanets } = useContext(MyContext);
   return (
-    <div>
-      <Filter />
-      {
-        isLoading
-          ? (<h3>Carregando...</h3>)
-          : (
-            <table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Rotation Period</th>
-                  <th>Orbital Period</th>
-                  <th>Diameter</th>
-                  <th>Climate</th>
-                  <th>Gravity</th>
-                  <th>Terrain</th>
-                  <th>Surface Water</th>
-                  <th>Population</th>
-                  <th>Films</th>
-                  <th>Created</th>
-                  <th>Edited</th>
-                  <th>URL</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {
-                  filteredPlanet
-                    ?.filter((e) => e.name.includes(nameFilter))
-                    .map((e) => (
-                      <tr key={ e.name }>
-                        <td>{e.name}</td>
-                        <td>{e.rotation_period}</td>
-                        <td>{e.orbital_period}</td>
-                        <td>{e.diameter}</td>
-                        <td>{e.climate}</td>
-                        <td>{e.gravity}</td>
-                        <td>{e.terrain}</td>
-                        <td>{e.surface_water}</td>
-                        <td>{e.population}</td>
-                        <td>{e.films}</td>
-                        <td>{e.created}</td>
-                        <td>{e.edited}</td>
-                        <td>{e.url}</td>
-                      </tr>
-                    ))
-                }
-              </tbody>
-            </table>
+    <table>
+      <thead>
+        <tr>
+          {
+            planets.length > 0 && (
+              Object.keys(planets[0]).map((element) => <th key={ element }>{element}</th>)
+            )
+          }
+        </tr>
+      </thead>
+      <tbody>
+        {
+          filteredPlanets.length > 0 && (
+            filteredPlanets.map((planet) => (
+              <tr key={ planet.name }>
+                <td>{planet.name}</td>
+                <td>{planet.rotation_period}</td>
+                <td>{planet.orbital_period}</td>
+                <td>{planet.diameter}</td>
+                <td>{planet.climate}</td>
+                <td>{planet.gravity}</td>
+                <td>{planet.terrain}</td>
+                <td>{planet.surface_water}</td>
+                <td>{planet.population}</td>
+                <td>{planet.films.map((film) => <p key={ film }>{film}</p>)}</td>
+                <td>{planet.created}</td>
+                <td>{planet.edited}</td>
+                <td>{planet.url}</td>
+              </tr>
+            ))
           )
-      }
-    </div>
+        }
+      </tbody>
+    </table>
   );
 }
 
