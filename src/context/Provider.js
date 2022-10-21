@@ -1,92 +1,131 @@
-import React, { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import Context from './Context';
 
 function Provider({ children }) {
   const [planets, setPlanets] = useState([]);
-  const [nameFilter, setNameFilter] = useState('');
-  const [valueFilter, setValueFilter] = useState('0');
-  const [columnFilter, setColumnFilter] = useState('population');
-  const [operatorFilter, setOperatorFilter] = useState('maior que');
-  const [isLoading, setIsLoading] = useState(true);
-  const [filteredPlanet, setFilteredPlanet] = useState([]);
-  const [filters, setFilters] = useState([]);
+  const [filteredPlanets, setFilteredPlanets] = useState([]);
+  const [stats, setStats] = useState({
+    column: 'population',
+    comparison: 'maior que',
+    filterValue: 0,
+  });
 
-  useEffect(() => {
-    const getPlanets = async () => {
-      const ENDPOINT = 'https://swapi.dev/api/planets';
-      const { results } = await fetch(ENDPOINT).then((response) => response.json());
-      results.filter((planet) => delete (planet.residents));
-      setPlanets(results);
-      setFilteredPlanet(results);
-      setIsLoading(false);
-    };
-    getPlanets();
+  const options = useMemo(() => (
+    [
+      'population',
+      'orbital_period',
+      'diameter',
+      'rotation_period',
+      'surface_water',
+    ]
+  ), []);
+
+  const [optionsColumn, setOptionsColumn] = useState(options);
+
+  const [activeOptions, setActiveOptions] = useState([]);
+
+  const handleChangeFilters = useCallback(({ target }) => {
+    const { value, name } = target;
+    if (name !== '') {
+      setStats({ ...stats, [name]: value });
+    } else {
+      const filter = planets.filter((planet) => planet.name.includes(value));
+      setFilteredPlanets(filter);
+    }
+  }, [planets, stats]);
+
+  const handleFilterOptions = useCallback((column, comparison, filterValue) => {
+    const updateOptionsColumn = optionsColumn.filter((element) => element !== column);
+    setOptionsColumn(updateOptionsColumn);
+    setActiveOptions([...activeOptions, { column, comparison, filterValue }]);
+    setStats({ ...stats, column: updateOptionsColumn[0] });
+  }, [optionsColumn, activeOptions, stats, setStats]);
+
+  const setRenderPlanets = useCallback((column, comparison, filterValue, planetsArr) => {
+    let filter;
+    if (comparison === 'maior que') {
+      filter = planetsArr.filter((planet) => planet[column] > Number(filterValue));
+    }
+    if (comparison === 'menor que') {
+      filter = planetsArr.filter((planet) => planet[column] < Number(filterValue));
+    }
+    if (comparison === 'igual a') {
+      filter = planetsArr.filter((planet) => planet[column] === filterValue);
+    }
+    return filter;
   }, []);
 
-  useEffect(() => {
-    setFilteredPlanet(filteredPlanet.filter((el) => {
-      switch (operatorFilter) {
-      case 'maior que': return +el[columnFilter] > +valueFilter;
-      case 'menor que': return +el[columnFilter] < +valueFilter;
-      default: return +el[columnFilter] === +valueFilter;
+  const handleClickFilterStats = useCallback(() => {
+    const { column, comparison, filterValue } = stats;
+    const filter = setRenderPlanets(column, comparison, filterValue, filteredPlanets);
+    handleFilterOptions(column, comparison, filterValue);
+    setFilteredPlanets(filter);
+  }, [stats, filteredPlanets, setRenderPlanets, handleFilterOptions]);
+
+  const removeFilter = useCallback((option) => {
+    let updateActiveOptions;
+    setFilteredPlanets(planets);
+
+    if (option === 'all') {
+      updateActiveOptions = [];
+      setOptionsColumn([...options]);
+      setActiveOptions(updateActiveOptions);
+    } else {
+      updateActiveOptions = activeOptions.filter((element) => (
+        element.column !== option
+      ));
+      setActiveOptions(updateActiveOptions);
+      setOptionsColumn([...optionsColumn, option]);
+      if (activeOptions.length > 0) {
+        updateActiveOptions.forEach((element) => {
+          const { column, comparison, filterValue } = element;
+          const filter = setRenderPlanets(column, comparison, filterValue, planets);
+          setFilteredPlanets(filter);
+        });
       }
-    }));
-  }, [filters]);
+    }
+  }, [activeOptions, optionsColumn, options, planets, setRenderPlanets]);
 
-  const handleNameFilter = ({ target }) => {
-    setNameFilter(target.value);
-  };
-
-  const handleColumnFilter = ({ target }) => {
-    setColumnFilter(target.value);
-  };
-
-  const handleOperatorFilter = ({ target }) => {
-    setOperatorFilter(target.value);
-  };
-
-  const handleValueFilter = ({ target }) => {
-    setValueFilter(target.value);
-  };
-
+  useEffect(() => {
+    const getStarWarsPlanetsApi = async () => {
+      const endpoint = 'https://swapi.dev/api/planets';
+      const response = await fetch(endpoint);
+      const { results } = await response.json();
+      const filteredResults = results.map((element) => {
+        delete element.residents;
+        return element;
+      });
+      setPlanets(filteredResults);
+      setFilteredPlanets(filteredResults);
+    };
+    getStarWarsPlanetsApi();
+  }, []);
+  useEffect(() => {
+  }, [setFilteredPlanets]);
   const contextValue = useMemo(() => ({
     planets,
-    isLoading,
-    nameFilter,
-    valueFilter,
-    columnFilter,
-    operatorFilter,
-    filteredPlanet,
-    handleNameFilter,
-    submitFilter: (e) => {
-      e.preventDefault();
-      if (!columnFilter || !valueFilter || !operatorFilter) return;
-      const newFilter = {
-        columnFilter,
-        operatorFilter,
-        valueFilter,
-      };
-      setFilters((prev) => [...prev, { ...newFilter }]);
-    },
-    handleValueFilter,
-    handleColumnFilter,
-    handleOperatorFilter,
-    filters,
+    filteredPlanets,
+    stats,
+    optionsColumn,
+    activeOptions,
+    handleChangeFilters,
+    handleClickFilterStats,
+    removeFilter,
   }), [
     planets,
-    isLoading,
-    nameFilter,
-    valueFilter,
-    columnFilter,
-    operatorFilter,
-    filteredPlanet,
-    filters,
+    filteredPlanets,
+    stats,
+    optionsColumn,
+    activeOptions,
+    handleChangeFilters,
+    handleClickFilterStats,
+    removeFilter,
   ]);
 
   return (
     <Context.Provider value={ contextValue }>
-      {children}
+      { children }
     </Context.Provider>
   );
 }
